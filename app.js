@@ -1,7 +1,6 @@
 const express = require('express');
 const db = require('./utils/db-connection');
 
-const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoute');
 const storeRoutes = require('./routes/storeRoutes');
 const cors = require('cors');
@@ -18,7 +17,6 @@ app.get('/', (req, res) => {
 });
 
 
-app.use("/users", userRoutes);
 app.use("/expenses", expenseRoutes);
 app.use("/store", storeRoutes);
 
