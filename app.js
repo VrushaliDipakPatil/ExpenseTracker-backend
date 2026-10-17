@@ -1,10 +1,7 @@
 const express = require('express');
 const db = require('./utils/db-connection');
-const studentRoutes = require('./routes/studentsRoutes');
-const busesRoutes = require('./routes/busesRoutes');
+
 const userRoutes = require('./routes/userRoutes');
-const coursesRoutes = require('./routes/coursesRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
 const expenseRoutes = require('./routes/expenseRoute');
 const storeRoutes = require('./routes/storeRoutes');
 const cors = require('cors');
