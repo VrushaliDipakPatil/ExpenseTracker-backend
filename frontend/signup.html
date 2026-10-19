@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | FinTrack</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+
+  <main class="auth-container">
+    <section class="auth-card">
+
+      <a href="index.html" class="auth-brand">
+        <span class="brand-icon">₹</span>
+        <span>FinTrack</span>
+      </a>
+
+      <div class="auth-heading">
+        <p class="eyebrow">YOUR MONEY, YOUR CONTROL</p>
+        <h1>Create your account</h1>
+        <p>Start tracking your income and expenses today.</p>
+      </div>
+
+      <form id="signup-form">
+        <div class="form-group">
+          <label for="signup-name">Full name</label>
+          <input
+            type="text"
+            id="signup-name"
+            name="name"
+            placeholder="Enter your full name"
+            autocomplete="name"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="signup-email">Email address</label>
+          <input
+            type="email"
+            id="signup-email"
+            name="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input
+            type="password"
+            id="signup-password"
+            name="password"
+            placeholder="Create a password"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-password">Confirm password</label>
+          <input
+            type="password"
+            id="confirm-password"
+            name="confirmPassword"
+            placeholder="Enter your password again"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          >
+        </div>
+
+        <p id="signup-message" class="auth-message" aria-live="polite"></p>
+
+        <button type="submit" class="primary-button auth-submit">
+          Create account
+        </button>
+      </form>
+
+      <p class="auth-footer">
+        Already have an account?
+        <a href="login.html">Log in</a>
+      </p>
+
+    </section>
+  </main>
+
+  <script src="signup.js"></script>
+</body>
+</html>

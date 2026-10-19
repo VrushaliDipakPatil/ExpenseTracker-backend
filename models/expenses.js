@@ -1,4 +1,5 @@
-const {Sequelize, DataTypes} = require('sequelize');
+
+const { DataTypes } = require('sequelize');
 const sequelize = require('../utils/db-connection');
 
 const Expenses = sequelize.define('Expense', {
@@ -18,9 +19,17 @@ const Expenses = sequelize.define('Expense', {
   category: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  type: {
+    type: DataTypes.ENUM('credit', 'debit'),
+    allowNull: false
+  },
+  date: {
+    type: DataTypes.DATEONLY,
+    allowNull: false
   }
-},{
-    timestamps: false
+}, {
+  timestamps: false
 });
 
 module.exports = Expenses;
