@@ -1,5 +1,5 @@
 
-const API_URL = 'http://localhost:3000/expenses';
+const API_URL = 'http://127.0.0.1:3000/expenses';
 
 const state = {
   transactions: [],
@@ -39,9 +39,11 @@ function showMessage(message, isError = true) {
   element.style.color = isError ? '#e15f68' : '#159b72';
 }
 
+
 async function request(url, options = {}) {
   const response = await fetch(url, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers || {})
@@ -50,12 +52,18 @@ async function request(url, options = {}) {
 
   const data = await response.json().catch(() => ({}));
 
+  if (response.status === 401) {
+    window.location.replace('login.html');
+    throw new Error('Please log in to continue.');
+  }
+
   if (!response.ok) {
     throw new Error(data.message || 'Something went wrong.');
   }
 
   return data;
 }
+
 
 function calculateTotals(transactions) {
   return transactions.reduce((totals, transaction) => {
@@ -363,7 +371,7 @@ async function loadTransactions() {
   } catch (error) {
     console.error('Could not load transactions:', error);
     $('#transaction-list').innerHTML = renderEmptyRow(
-      'Could not load transactions. Check that the backend is running.',
+      'Could not load transactions.',
       6
     );
   }

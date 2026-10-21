@@ -1,4 +1,3 @@
-
 const Expenses = require("../models/expenses");
 
 const addExpense = async (req, res) => {
@@ -20,7 +19,8 @@ const addExpense = async (req, res) => {
       new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) !== date
     ) {
       return res.status(400).json({
-        message: "Please provide a valid amount, description, category, type and date."
+        message:
+          "Please provide a valid amount, description, category, type and date.",
       });
     }
 
@@ -29,12 +29,13 @@ const addExpense = async (req, res) => {
       description: description.trim(),
       category: category.trim(),
       type,
-      date
+      date,
+      userId: req.userId,
     });
 
     res.status(201).json({
       message: "Transaction added successfully",
-      expense
+      expense,
     });
   } catch (error) {
     console.error("Error adding transaction:", error);
@@ -45,7 +46,9 @@ const addExpense = async (req, res) => {
 const fetchExpenses = async (req, res) => {
   try {
     const { date, month, year } = req.query;
-    const where = {};
+    const where = {
+      userId: req.userId,
+    };
 
     if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return res.status(400).json({ message: "Invalid date format." });
@@ -60,19 +63,19 @@ const fetchExpenses = async (req, res) => {
       }
       const startDate = `${month}-01`;
       const endDate = new Date(Date.UTC(yearValue, monthValue, 0))
-        .toISOString().slice(0, 10);
+        .toISOString()
+        .slice(0, 10);
       const { Op } = require("sequelize");
       where.date = { [Op.between]: [startDate, endDate] };
     } else if (month) {
-      return res.status(400).json({ message: "Month must be in YYYY-MM format." });
+      return res
+        .status(400)
+        .json({ message: "Month must be in YYYY-MM format." });
     } else if (year && /^\d{4}$/.test(year)) {
       const yearValue = Number(year);
       const { Op } = require("sequelize");
       where.date = {
-        [Op.between]: [
-          `${year}-01-01`,
-          `${yearValue}-12-31`
-        ]
+        [Op.between]: [`${year}-01-01`, `${yearValue}-12-31`],
       };
     } else if (year) {
       return res.status(400).json({ message: "Year must be in YYYY format." });
@@ -80,7 +83,10 @@ const fetchExpenses = async (req, res) => {
 
     const expenses = await Expenses.findAll({
       where,
-      order: [["date", "DESC"], ["id", "DESC"]]
+      order: [
+        ["date", "DESC"],
+        ["id", "DESC"],
+      ],
     });
 
     res.status(200).json(expenses);
@@ -92,7 +98,12 @@ const fetchExpenses = async (req, res) => {
 
 const fetchExpenseById = async (req, res) => {
   try {
-    const expense = await Expenses.findByPk(req.params.id);
+    const expense = await Expenses.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.userId,
+      },
+    });
 
     if (!expense) {
       return res.status(404).json({ message: "Transaction not found" });
@@ -107,7 +118,12 @@ const fetchExpenseById = async (req, res) => {
 
 const updateExpense = async (req, res) => {
   try {
-    const expense = await Expenses.findByPk(req.params.id);
+    const expense = await Expenses.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.userId,
+      },
+    });
 
     if (!expense) {
       return res.status(404).json({ message: "Transaction not found" });
@@ -117,8 +133,14 @@ const updateExpense = async (req, res) => {
     const updates = {};
 
     if (amount !== undefined) {
-      if (amount === "" || !Number.isFinite(Number(amount)) || Number(amount) <= 0) {
-        return res.status(400).json({ message: "Amount must be greater than zero." });
+      if (
+        amount === "" ||
+        !Number.isFinite(Number(amount)) ||
+        Number(amount) <= 0
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Amount must be greater than zero." });
       }
       updates.amount = amount;
     }
@@ -139,7 +161,9 @@ const updateExpense = async (req, res) => {
 
     if (type !== undefined) {
       if (!["credit", "debit"].includes(type)) {
-        return res.status(400).json({ message: "Type must be credit or debit." });
+        return res
+          .status(400)
+          .json({ message: "Type must be credit or debit." });
       }
       updates.type = type;
     }
@@ -160,7 +184,7 @@ const updateExpense = async (req, res) => {
 
     res.status(200).json({
       message: "Transaction updated successfully",
-      expense
+      expense,
     });
   } catch (error) {
     console.error("Error updating transaction:", error);
@@ -170,7 +194,12 @@ const updateExpense = async (req, res) => {
 
 const deleteExpense = async (req, res) => {
   try {
-    const expense = await Expenses.findByPk(req.params.id);
+    const expense = await Expenses.findOne({
+      where: {
+        id: req.params.id,
+        userId: req.userId,
+      },
+    });
 
     if (!expense) {
       return res.status(404).json({ message: "Transaction not found" });
@@ -190,5 +219,5 @@ module.exports = {
   fetchExpenses,
   fetchExpenseById,
   updateExpense,
-  deleteExpense
+  deleteExpense,
 };

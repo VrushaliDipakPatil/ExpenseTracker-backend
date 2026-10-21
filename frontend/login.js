@@ -15,8 +15,9 @@ loginForm.addEventListener('submit', async (event) => {
   submitButton.textContent = 'Logging in...';
 
   try {
-    const response = await fetch('http://localhost:3000/users/login', {
+    const response = await fetch('http://127.0.0.1:3000/users/login', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -31,9 +32,6 @@ loginForm.addEventListener('submit', async (event) => {
 
     loginMessage.style.color = '#159b72';
     loginMessage.textContent = `Welcome back, ${data.user.name}!`;
-
-    // Save basic user information for the current browser session.
-    sessionStorage.setItem('loggedInUser', JSON.stringify(data.user));
 
     // Redirect to the expense dashboard after successful login.
     setTimeout(() => {
