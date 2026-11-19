@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Result - FinTrack</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+  <main class="auth-container">
+    <section class="auth-card">
+      <div class="auth-brand">
+        <span class="brand-icon">₹</span>
+        <span>FinTrack</span>
+      </div>
+
+      <div class="auth-heading">
+        <p class="eyebrow">PREMIUM MEMBERSHIP</p>
+        <h1 id="payment-title">Verifying your payment...</h1>
+        <p id="payment-message">
+          Please wait while we confirm your transaction securely.
+        </p>
+      </div>
+
+      <p id="payment-status" class="auth-message" role="status">
+        Please do not close this page.
+      </p>
+
+      <button
+        id="check-payment-status"
+        class="auth-submit"
+        type="button"
+        hidden
+      >
+        Check Payment Status
+      </button>
+
+      <button
+        id="retry-payment"
+        class="auth-submit"
+        type="button"
+        hidden
+      >
+        Retry Payment
+      </button>
+
+      <button
+        id="back-to-dashboard"
+        class="auth-submit"
+        type="button"
+        hidden
+      >
+        Return to FinTrack
+      </button>
+    </section>
+  </main>
+
+  <script src="payment-result.js"></script>
+</body>
+</html>

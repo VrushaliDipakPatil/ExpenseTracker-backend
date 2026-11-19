@@ -1350,3 +1350,41 @@ td.amount-cell {
   font-size: 14px;
   line-height: 1.5;
 }
+
+
+/* Topbar action buttons */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+#buy-premium-btn {
+  background: #eaf9f2;
+  color: #159b72;
+  border: 1px solid #bcebd7;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+#buy-premium-btn:hover {
+  background: #d9f4e8;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  .topbar-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .topbar-actions button {
+    width: 100%;
+    max-width: none;
+    font-size: 12px;
+    padding: 10px;
+  }
+}

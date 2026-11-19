@@ -540,6 +540,72 @@ function exportPDF(period) {
   pdf.save(`fintrack-${period}-${periodValue}.pdf`);
 }
 
+async function loadLatestOrderStatus() {
+  const statusElement = $('#premium-order-status');
+  const buyButton = $('#buy-premium-btn');
+
+  try {
+    const order = await request('http://127.0.0.1:3000/orders/latest');
+
+    if (order.status === 'NO_ORDER') {
+      statusElement.textContent = '';
+    } else if (order.status === 'SUCCESSFUL') {
+      statusElement.textContent = '⭐ Premium Membership Active';
+      buyButton.hidden = true;
+    } else if (order.status === 'FAILED') {
+      statusElement.textContent = 'Last payment: Failed. You can try again.';
+    } else if (order.status === 'PENDING') {
+      statusElement.textContent = 'Payment is still pending. Please check its status.';
+    }
+
+  } catch (error) {
+    console.error('Could not load latest order status:', error);
+    statusElement.textContent = 'Could not load payment status.';
+  }
+}
+
+async function buyPremiumMembership() {
+  const button = $('#buy-premium-btn');
+
+  if (typeof window.Cashfree !== 'function') {
+    alert('Cashfree could not load. Please refresh and try again.');
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = 'Creating payment...';
+
+  try {
+    // Create a pending order through your backend.
+    const order = await request('http://127.0.0.1:3000/orders/create', {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+
+    if (!order.paymentSessionId) {
+      throw new Error('Payment session was not created.');
+    }
+
+    // Initialize Cashfree in sandbox mode.
+    const cashfree = window.Cashfree({
+      mode: 'sandbox'
+    });
+
+    // Open the Cashfree checkout page.
+    await cashfree.checkout({
+      paymentSessionId: order.paymentSessionId,
+      redirectTarget: '_self'
+    });
+  } catch (error) {
+    console.error('Premium membership payment error:', error);
+    alert(error.message || 'Unable to start payment. Please try again.');
+  } finally {
+    button.disabled = false;
+    button.textContent = '⭐ Buy Premium ₹500';
+  }
+}
+
+
 function initializeApp() {
   $('#daily-date').value = today();
   $('#transaction-date').value = today();
@@ -552,6 +618,7 @@ function initializeApp() {
   });
 
   $('#add-transaction-btn').addEventListener('click', () => openModal());
+  $('#buy-premium-btn').addEventListener('click', buyPremiumMembership);
   $('#close-modal').addEventListener('click', closeModal);
   $('#transaction-form').addEventListener('submit', saveTransaction);
 
@@ -590,6 +657,7 @@ function initializeApp() {
   });
 
   loadTransactions();
+  loadLatestOrderStatus();
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);

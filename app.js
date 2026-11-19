@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const db = require('./utils/db-connection');
 const session = require('express-session');
@@ -6,13 +8,16 @@ const User = require('./models/user');
 const Expenses = require('./models/expenses');
 const expenseRoutes = require('./routes/expenseRoute');
 const userRoutes = require('./routes/userRoute');
+const orderRoutes = require('./routes/orderRoute');
 const cors = require('cors');
 const app = express();
 const port = 3000;
 
 app.use(cors({
-  origin: 'http://127.0.0.1:5500',
-  credentials: true
+    origin: 'http://127.0.0.1:5500',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
@@ -35,6 +40,7 @@ app.get('/', (req, res) => {
 
 app.use("/expenses", expenseRoutes);
 app.use("/users", userRoutes);
+app.use("/orders", orderRoutes);
 require('./models');
 
 db.sync({force:false}).then(() => {
