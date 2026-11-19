@@ -1,4 +1,5 @@
-const { User, Order } = require("../models");
+const { User, Order, Expenses} = require("../models");
+const { fn, col } = require("sequelize");
 const cashfree = require("../utils/cashfree");
 const { randomUUID } = require("crypto");
 
@@ -171,31 +172,105 @@ exports.verifyPayment = async (req, res) => {
   }
 };
 
+
 exports.getLatestOrder = async (req, res) => {
   try {
+    const user = await User.findByPk(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found.'
+      });
+    }
+
     const order = await Order.findOne({
       where: { userId: req.userId },
       order: [['createdAt', 'DESC']]
     });
 
-    if (!order) {
-      return res.json({
-        status: 'NO_ORDER',
-        message: 'No payment attempts found.'
-      });
-    }
-
     return res.json({
-      status: order.status,
-      amount: order.amount,
-      orderId: order.orderId,
-      createdAt: order.createdAt
+      isPremium: user.isPremium,
+      status: order ? order.status : 'NO_ORDER',
+      amount: order ? order.amount : null,
+      orderId: order ? order.orderId : null,
+      createdAt: order ? order.createdAt : null
     });
 
   } catch (error) {
     console.error('Get latest order error:', error);
+
     return res.status(500).json({
       message: 'Could not fetch the latest order.'
+    });
+  }
+};
+
+
+exports.getLeaderboard = async (req, res) => {
+  try {
+    // Check logged-in user
+    const currentUser = await User.findByPk(req.userId);
+
+    if (!currentUser) {
+      return res.status(404).json({
+        message: 'User not found.'
+      });
+    }
+
+    // Only premium users can access leaderboard
+    if (!currentUser.isPremium) {
+      return res.status(403).json({
+        message: 'Premium membership is required to view the leaderboard.'
+      });
+    }
+
+    // Fetch all users
+    const users = await User.findAll({
+      attributes: ['id', 'name'],
+      raw: true
+    });
+
+    // Calculate total debit expenses for each user
+    const expenseTotals = await Expenses.findAll({
+      attributes: [
+        'userId',
+        [fn('SUM', col('amount')), 'totalExpenses']
+      ],
+      where: {
+        type: 'debit'
+      },
+      group: ['userId'],
+      raw: true
+    });
+
+    // Create a map of user expense totals
+    const totalsMap = {};
+
+    expenseTotals.forEach((expense) => {
+      totalsMap[expense.userId] = Number(expense.totalExpenses);
+    });
+
+    // Add totals to users and sort by highest expenses
+    const leaderboard = users
+      .map((user) => ({
+        name: user.name,
+        totalExpenses: totalsMap[user.id] || 0
+      }))
+      .sort((a, b) => b.totalExpenses - a.totalExpenses)
+      .map((user, index) => ({
+        rank: index + 1,
+        ...user
+      }));
+
+    return res.status(200).json({
+      leaderboard
+    });
+
+  } catch (error) {
+    console.error('Leaderboard error:', error);
+
+    return res.status(500).json({
+      message: 'Could not fetch leaderboard.'
     });
   }
 };

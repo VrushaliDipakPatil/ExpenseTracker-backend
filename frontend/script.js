@@ -1,92 +1,92 @@
-
-const API_URL = 'http://127.0.0.1:3000/expenses';
+const API_URL = "http://127.0.0.1:3000/expenses";
 
 const state = {
   transactions: [],
-  currentView: 'daily',
-  chart: null
+  currentView: "daily",
+  chart: null,
 };
 
 const $ = (selector) => document.querySelector(selector);
 
 const today = () => {
   const now = new Date();
-  const localDate = new Date(
-    now.getTime() - now.getTimezoneOffset() * 60000
-  );
+  const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
   return localDate.toISOString().slice(0, 10);
 };
 
 const money = (amount) =>
-  new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 2
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
   }).format(Number(amount) || 0);
 
 const escapeHTML = (value) =>
-  String(value ?? '').replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  })[char]);
+  String(value ?? "").replace(
+    /[&<>"']/g,
+    (char) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[char],
+  );
 
 function showMessage(message, isError = true) {
-  const element = $('#form-message');
+  const element = $("#form-message");
   element.textContent = message;
-  element.style.color = isError ? '#e15f68' : '#159b72';
+  element.style.color = isError ? "#e15f68" : "#159b72";
 }
-
 
 async function request(url, options = {}) {
   const response = await fetch(url, {
     ...options,
-    credentials: 'include',
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {})
-    }
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
   });
 
   const data = await response.json().catch(() => ({}));
 
   if (response.status === 401) {
-    window.location.replace('login.html');
-    throw new Error('Please log in to continue.');
+    window.location.replace("login.html");
+    throw new Error("Please log in to continue.");
   }
 
   if (!response.ok) {
-    throw new Error(data.message || 'Something went wrong.');
+    throw new Error(data.message || "Something went wrong.");
   }
 
   return data;
 }
 
-
 function calculateTotals(transactions) {
-  return transactions.reduce((totals, transaction) => {
-    const amount = Number(transaction.amount) || 0;
+  return transactions.reduce(
+    (totals, transaction) => {
+      const amount = Number(transaction.amount) || 0;
 
-    if (transaction.type === 'credit') {
-      totals.income += amount;
-    } else {
-      totals.expense += amount;
-    }
+      if (transaction.type === "credit") {
+        totals.income += amount;
+      } else {
+        totals.expense += amount;
+      }
 
-    return totals;
-  }, { income: 0, expense: 0 });
+      return totals;
+    },
+    { income: 0, expense: 0 },
+  );
 }
 
 function renderSummary(transactions) {
   const totals = calculateTotals(transactions);
 
-  $('#balance-amount').textContent = money(
-    totals.income - totals.expense
-  );
-  $('#income-amount').textContent = money(totals.income);
-  $('#expense-amount').textContent = money(totals.expense);
+  $("#balance-amount").textContent = money(totals.income - totals.expense);
+  $("#income-amount").textContent = money(totals.income);
+  $("#expense-amount").textContent = money(totals.expense);
 }
 
 function renderEmptyRow(message, columnCount) {
@@ -106,29 +106,32 @@ function renderTransactions(transactions, target, includeActions = false) {
   const columnCount = includeActions ? 6 : 5;
 
   if (!transactions.length) {
-    list.innerHTML = renderEmptyRow('No transactions found', columnCount);
+    list.innerHTML = renderEmptyRow("No transactions found", columnCount);
     return;
   }
 
-  list.innerHTML = transactions.map((transaction) => {
-    const isIncome = transaction.type === 'credit';
-    const amountClass = isIncome ? 'income-amount' : 'expense-amount';
-    const sign = isIncome ? '+' : '−';
+  list.innerHTML = transactions
+    .map((transaction) => {
+      const isIncome = transaction.type === "credit";
+      const amountClass = isIncome ? "income-amount" : "expense-amount";
+      const sign = isIncome ? "+" : "−";
 
-    return `
+      return `
       <tr>
         <td>${escapeHTML(transaction.description)}</td>
         <td>${escapeHTML(transaction.category)}</td>
         <td>${escapeHTML(transaction.date)}</td>
         <td>
-          <span class="type-badge ${isIncome ? 'credit' : 'debit'}">
-            ${isIncome ? 'Credit' : 'Debit'}
+          <span class="type-badge ${isIncome ? "credit" : "debit"}">
+            ${isIncome ? "Credit" : "Debit"}
           </span>
         </td>
         <td class="amount-cell ${amountClass}">
           ${sign}${money(transaction.amount)}
         </td>
-        ${includeActions ? `
+        ${
+          includeActions
+            ? `
           <td>
             <button
               class="action-button"
@@ -141,29 +144,30 @@ function renderTransactions(transactions, target, includeActions = false) {
               type="button"
             >Delete</button>
           </td>
-        ` : ''}
+        `
+            : ""
+        }
       </tr>
     `;
-  }).join('');
+    })
+    .join("");
 }
 
 function filteredTransactions(period) {
-  if (period === 'daily') {
-    const date = $('#daily-date').value;
+  if (period === "daily") {
+    const date = $("#daily-date").value;
     return state.transactions.filter((item) => item.date === date);
   }
 
-  if (period === 'monthly') {
-    const month = $('#report-month').value;
-    return state.transactions.filter((item) =>
-      item.date.startsWith(month)
-    );
+  if (period === "monthly") {
+    const month = $("#report-month").value;
+    return state.transactions.filter((item) => item.date.startsWith(month));
   }
 
-  if (period === 'yearly') {
-    const year = $('#report-year').value;
+  if (period === "yearly") {
+    const year = $("#report-year").value;
     return state.transactions.filter((item) =>
-      item.date.startsWith(`${year}-`)
+      item.date.startsWith(`${year}-`),
     );
   }
 
@@ -171,20 +175,20 @@ function filteredTransactions(period) {
 }
 
 function renderDaily() {
-  const transactions = filteredTransactions('daily');
+  const transactions = filteredTransactions("daily");
   const totals = calculateTotals(transactions);
 
   renderSummary(transactions);
-  renderTransactions(transactions, '#transaction-list', true);
+  renderTransactions(transactions, "#transaction-list", true);
 
-  $('#transaction-count').textContent =
-    `${transactions.length} transaction${transactions.length === 1 ? '' : 's'} on this date`;
+  $("#transaction-count").textContent =
+    `${transactions.length} transaction${transactions.length === 1 ? "" : "s"} on this date`;
 }
 
 function renderReport(period) {
   const transactions = filteredTransactions(period);
   const totals = calculateTotals(transactions);
-  const prefix = period === 'monthly' ? 'monthly' : 'yearly';
+  const prefix = period === "monthly" ? "monthly" : "yearly";
 
   $(`#${prefix}-totals`).innerHTML = `
     <div class="report-total">
@@ -205,10 +209,10 @@ function renderReport(period) {
 }
 
 function renderChart() {
-  const year = $('#chart-year').value;
+  const year = $("#chart-year").value;
   const monthlyTotals = Array.from({ length: 12 }, () => ({
     income: 0,
-    expense: 0
+    expense: 0,
   }));
 
   state.transactions
@@ -218,69 +222,78 @@ function renderChart() {
 
       if (monthIndex < 0 || monthIndex > 11) return;
 
-      if (item.type === 'credit') {
+      if (item.type === "credit") {
         monthlyTotals[monthIndex].income += Number(item.amount);
       } else {
         monthlyTotals[monthIndex].expense += Number(item.amount);
       }
     });
 
-  const canvas = $('#finance-chart');
+  const canvas = $("#finance-chart");
 
   if (state.chart) {
     state.chart.destroy();
   }
 
-  if (typeof Chart === 'undefined') {
+  if (typeof Chart === "undefined") {
     canvas.parentElement.innerHTML =
-      '<p>Chart library could not load. Check your internet connection and refresh.</p>';
+      "<p>Chart library could not load. Check your internet connection and refresh.</p>";
     return;
   }
 
   state.chart = new Chart(canvas, {
-    type: 'bar',
+    type: "bar",
     data: {
       labels: [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
       ],
       datasets: [
         {
-          label: 'Income',
+          label: "Income",
           data: monthlyTotals.map((item) => item.income),
-          backgroundColor: '#159b72',
-          borderRadius: 5
+          backgroundColor: "#159b72",
+          borderRadius: 5,
         },
         {
-          label: 'Expenses',
+          label: "Expenses",
           data: monthlyTotals.map((item) => item.expense),
-          backgroundColor: '#e15f68',
-          borderRadius: 5
-        }
-      ]
+          backgroundColor: "#e15f68",
+          borderRadius: 5,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       interaction: {
         intersect: false,
-        mode: 'index'
+        mode: "index",
       },
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
       },
       scales: {
         y: {
           beginAtZero: true,
           ticks: {
-            callback: (value) => '₹' + Number(value).toLocaleString('en-IN')
-          }
-        }
-      }
-    }
+            callback: (value) => "₹" + Number(value).toLocaleString("en-IN"),
+          },
+        },
+      },
+    },
   });
 }
-
 
 function populateYearOptions() {
   const currentYear = Number(today().slice(0, 4));
@@ -300,12 +313,13 @@ function populateYearOptions() {
 
   const options = [...years]
     .sort((a, b) => Number(b) - Number(a))
-    .map((year) =>
-      `<option value="${escapeHTML(year)}">${escapeHTML(year)}</option>`
+    .map(
+      (year) =>
+        `<option value="${escapeHTML(year)}">${escapeHTML(year)}</option>`,
     )
-    .join('');
+    .join("");
 
-  ['#report-year', '#chart-year'].forEach((selector) => {
+  ["#report-year", "#chart-year"].forEach((selector) => {
     const select = $(selector);
     const previousValue = select.value;
 
@@ -316,43 +330,39 @@ function populateYearOptions() {
   });
 }
 
-
 function renderCurrentView() {
-  if (state.currentView === 'daily') {
+  if (state.currentView === "daily") {
     renderDaily();
-  } else if (state.currentView === 'monthly') {
-    renderReport('monthly');
-  } else if (state.currentView === 'yearly') {
-    renderReport('yearly');
-  } else if (state.currentView === 'charts') {
+  } else if (state.currentView === "monthly") {
+    renderReport("monthly");
+  } else if (state.currentView === "yearly") {
+    renderReport("yearly");
+  } else if (state.currentView === "charts") {
     renderChart();
   }
 }
 
 function setView(view) {
   state.currentView = view;
-  $('#add-transaction-btn').classList.toggle('hidden', view !== 'daily');
-  $('#daily-summary').classList.toggle('hidden', view !== 'daily');
-  document.querySelectorAll('.nav-item').forEach((button) => {
-    button.classList.toggle('active', button.dataset.view === view);
+  $("#add-transaction-btn").classList.toggle("hidden", view !== "daily");
+  $("#daily-summary").classList.toggle("hidden", view !== "daily");
+  document.querySelectorAll(".nav-item").forEach((button) => {
+    button.classList.toggle("active", button.dataset.view === view);
   });
 
-  ['daily', 'monthly', 'yearly', 'charts'].forEach((name) => {
-    $(`#${name}-panel`).classList.toggle(
-      'hidden',
-      name !== view
-    );
+  ["daily", "monthly", "yearly", "charts"].forEach((name) => {
+    $(`#${name}-panel`).classList.toggle("hidden", name !== view);
   });
 
   const titles = {
-    daily: ['Daily Overview', 'A clear picture of your money, every day.'],
-    monthly: ['Monthly Reports', 'Review your finances month by month.'],
-    yearly: ['Yearly Reports', 'See your financial progress over the year.'],
-    charts: ['Analytics', 'Compare your income and spending.']
+    daily: ["Daily Overview", "A clear picture of your money, every day."],
+    monthly: ["Monthly Reports", "Review your finances month by month."],
+    yearly: ["Yearly Reports", "See your financial progress over the year."],
+    charts: ["Analytics", "Compare your income and spending."],
   };
 
-  $('#page-title').textContent = titles[view][0];
-  $('#page-subtitle').textContent = titles[view][1];
+  $("#page-title").textContent = titles[view][0];
+  $("#page-subtitle").textContent = titles[view][1];
 
   renderCurrentView();
 }
@@ -362,65 +372,63 @@ async function loadTransactions() {
     const transactions = await request(API_URL);
 
     if (!Array.isArray(transactions)) {
-      throw new Error('Unexpected response from the server.');
+      throw new Error("Unexpected response from the server.");
     }
 
     state.transactions = transactions;
     populateYearOptions();
     renderCurrentView();
   } catch (error) {
-    console.error('Could not load transactions:', error);
-    $('#transaction-list').innerHTML = renderEmptyRow(
-      'Could not load transactions.',
-      6
+    console.error("Could not load transactions:", error);
+    $("#transaction-list").innerHTML = renderEmptyRow(
+      "Could not load transactions.",
+      6,
     );
   }
 }
 
 function openModal(transaction = null) {
-  $('#transaction-form').reset();
-  $('#form-message').textContent = '';
+  $("#transaction-form").reset();
+  $("#form-message").textContent = "";
 
-  $('#modal-title').textContent = transaction
-    ? 'Edit transaction'
-    : 'Add transaction';
+  $("#modal-title").textContent = transaction
+    ? "Edit transaction"
+    : "Add transaction";
 
-  $('#transaction-form').dataset.editId = transaction
-    ? transaction.id
-    : '';
+  $("#transaction-form").dataset.editId = transaction ? transaction.id : "";
 
-  $('#amount').value = transaction ? transaction.amount : '';
-  $('#description').value = transaction ? transaction.description : '';
-  $('#category').value = transaction ? transaction.category : '';
-  $('#transaction-date').value = transaction ? transaction.date : today();
+  $("#amount").value = transaction ? transaction.amount : "";
+  $("#description").value = transaction ? transaction.description : "";
+  $("#category").value = transaction ? transaction.category : "";
+  $("#transaction-date").value = transaction ? transaction.date : today();
 
-  const type = transaction ? transaction.type : 'credit';
+  const type = transaction ? transaction.type : "credit";
   const radio = document.querySelector(`input[name="type"][value="${type}"]`);
 
   if (radio) radio.checked = true;
 
-  $('#transaction-modal').classList.remove('hidden');
-  $('#amount').focus();
+  $("#transaction-modal").classList.remove("hidden");
+  $("#amount").focus();
 }
 
 function closeModal() {
-  $('#transaction-modal').classList.add('hidden');
-  $('#transaction-form').dataset.editId = '';
+  $("#transaction-modal").classList.add("hidden");
+  $("#transaction-form").dataset.editId = "";
 }
 
 async function saveTransaction(event) {
   event.preventDefault();
-  showMessage('');
+  showMessage("");
 
   const form = event.currentTarget;
   const editId = form.dataset.editId;
 
   const transaction = {
-    amount: $('#amount').value,
-    description: $('#description').value.trim(),
-    category: $('#category').value,
+    amount: $("#amount").value,
+    description: $("#description").value.trim(),
+    category: $("#category").value,
     type: document.querySelector('input[name="type"]:checked').value,
-    date: $('#transaction-date').value
+    date: $("#transaction-date").value,
   };
 
   if (
@@ -430,40 +438,40 @@ async function saveTransaction(event) {
     !Number.isFinite(Number(transaction.amount)) ||
     Number(transaction.amount) <= 0
   ) {
-    showMessage('Please complete all fields with a valid amount.');
+    showMessage("Please complete all fields with a valid amount.");
     return;
   }
 
-  const saveButton = $('.submit-button');
+  const saveButton = $(".submit-button");
   saveButton.disabled = true;
-  saveButton.textContent = 'Saving...';
+  saveButton.textContent = "Saving...";
 
   try {
     if (editId) {
       await request(`${API_URL}/${encodeURIComponent(editId)}`, {
-        method: 'PUT',
-        body: JSON.stringify(transaction)
+        method: "PUT",
+        body: JSON.stringify(transaction),
       });
     } else {
       await request(`${API_URL}/add`, {
-        method: 'POST',
-        body: JSON.stringify(transaction)
+        method: "POST",
+        body: JSON.stringify(transaction),
       });
     }
 
     closeModal();
     await loadTransactions();
   } catch (error) {
-    showMessage(error.message || 'Unable to save transaction.');
+    showMessage(error.message || "Unable to save transaction.");
   } finally {
     saveButton.disabled = false;
-    saveButton.textContent = 'Save transaction';
+    saveButton.textContent = "Save transaction";
   }
 }
 
 async function deleteTransaction(id) {
   const transaction = state.transactions.find(
-    (item) => Number(item.id) === Number(id)
+    (item) => Number(item.id) === Number(id),
   );
 
   if (!transaction) return;
@@ -474,33 +482,33 @@ async function deleteTransaction(id) {
 
   try {
     await request(`${API_URL}/${encodeURIComponent(id)}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
 
     await loadTransactions();
   } catch (error) {
-    alert(error.message || 'Unable to delete transaction.');
+    alert(error.message || "Unable to delete transaction.");
   }
 }
 
 function exportPDF(period) {
   if (!window.jspdf?.jsPDF) {
-    alert('PDF library could not load. Check your internet connection.');
+    alert("PDF library could not load. Check your internet connection.");
     return;
   }
 
   const transactions = filteredTransactions(period);
   const totals = calculateTotals(transactions);
-  const title = period === 'monthly' ? 'Monthly Expense Report' : 'Yearly Expense Report';
-  const periodValue = period === 'monthly'
-    ? $('#report-month').value
-    : $('#report-year').value;
+  const title =
+    period === "monthly" ? "Monthly Expense Report" : "Yearly Expense Report";
+  const periodValue =
+    period === "monthly" ? $("#report-month").value : $("#report-year").value;
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF();
 
   pdf.setFontSize(18);
-  pdf.text('FinTrack', 14, 18);
+  pdf.text("FinTrack", 14, 18);
 
   pdf.setFontSize(12);
   pdf.text(title, 14, 28);
@@ -514,11 +522,11 @@ function exportPDF(period) {
   const pageHeight = pdf.internal.pageSize.getHeight();
 
   pdf.setFontSize(9);
-  pdf.text('Date', 14, y);
-  pdf.text('Description', 40, y);
-  pdf.text('Category', 100, y);
-  pdf.text('Type', 140, y);
-  pdf.text('Amount (INR)', 165, y);
+  pdf.text("Date", 14, y);
+  pdf.text("Description", 40, y);
+  pdf.text("Category", 100, y);
+  pdf.text("Type", 140, y);
+  pdf.text("Amount (INR)", 165, y);
   y += 7;
 
   pdf.line(14, y - 4, 195, y - 4);
@@ -529,10 +537,10 @@ function exportPDF(period) {
       y = 18;
     }
 
-    pdf.text(String(item.date || '').slice(0, 10), 14, y);
-    pdf.text(pdf.splitTextToSize(String(item.description || ''), 52)[0], 40, y);
-    pdf.text(pdf.splitTextToSize(String(item.category || ''), 35)[0], 100, y);
-    pdf.text(item.type === 'credit' ? 'Credit' : 'Debit', 140, y);
+    pdf.text(String(item.date || "").slice(0, 10), 14, y);
+    pdf.text(pdf.splitTextToSize(String(item.description || ""), 52)[0], 40, y);
+    pdf.text(pdf.splitTextToSize(String(item.category || ""), 35)[0], 100, y);
+    pdf.text(item.type === "credit" ? "Credit" : "Debit", 140, y);
     pdf.text(Number(item.amount).toFixed(2), 165, y);
     y += 7;
   });
@@ -541,111 +549,193 @@ function exportPDF(period) {
 }
 
 async function loadLatestOrderStatus() {
-  const statusElement = $('#premium-order-status');
-  const buyButton = $('#buy-premium-btn');
+  const statusElement = $("#premium-order-status");
+  const buyButton = $("#buy-premium-btn");
+  const premiumMessage = $("#premium-user-message");
+  const leaderboardButton = $("#show-leaderboard-btn");
 
   try {
-    const order = await request('http://127.0.0.1:3000/orders/latest');
+    const order = await request("http://127.0.0.1:3000/orders/latest");
 
-    if (order.status === 'NO_ORDER') {
-      statusElement.textContent = '';
-    } else if (order.status === 'SUCCESSFUL') {
-      statusElement.textContent = '⭐ Premium Membership Active';
-      buyButton.hidden = true;
-    } else if (order.status === 'FAILED') {
-      statusElement.textContent = 'Last payment: Failed. You can try again.';
-    } else if (order.status === 'PENDING') {
-      statusElement.textContent = 'Payment is still pending. Please check its status.';
+    if (order.isPremium) {
+      // Premium user
+      premiumMessage.classList.remove("hidden");
+      leaderboardButton.classList.remove("hidden");
+      buyButton.classList.add("hidden");
+      statusElement.textContent = "";
+      return;
     }
 
+    // Normal user
+    premiumMessage.classList.add("hidden");
+    leaderboardButton.classList.add("hidden");
+    buyButton.classList.remove("hidden");
+
+    if (order.status === "NO_ORDER") {
+      statusElement.textContent = "";
+    } else if (order.status === "FAILED") {
+      statusElement.textContent = "Last payment: Failed. You can try again.";
+    } else if (order.status === "PENDING") {
+      statusElement.textContent =
+        "Payment is still pending. Please check its status.";
+    } else {
+      statusElement.textContent = "";
+    }
   } catch (error) {
-    console.error('Could not load latest order status:', error);
-    statusElement.textContent = 'Could not load payment status.';
+    console.error("Could not load latest order status:", error);
+    statusElement.textContent = "Could not load payment status.";
+  }
+}
+
+async function loadLeaderboard() {
+  const leaderboardContent = $("#leaderboard-content");
+
+  leaderboardContent.innerHTML = "<p>Loading leaderboard...</p>";
+
+  try {
+    const data = await request("http://127.0.0.1:3000/orders/leaderboard");
+
+    if (!data.leaderboard || data.leaderboard.length === 0) {
+      leaderboardContent.innerHTML = "<p>No leaderboard data available.</p>";
+      return;
+    }
+
+    leaderboardContent.innerHTML = `
+      <div class="leaderboard-list">
+        ${data.leaderboard
+          .map(
+            (user) => `
+          <div class="leaderboard-item">
+            <span class="leaderboard-rank">#${user.rank}</span>
+            <span class="leaderboard-name">
+              ${escapeHTML(user.name)}
+            </span>
+            <strong class="leaderboard-amount">
+              ${money(user.totalExpenses)}
+            </strong>
+          </div>
+        `,
+          )
+          .join("")}
+      </div>
+    `;
+  } catch (error) {
+    console.error("Leaderboard loading error:", error);
+
+    leaderboardContent.innerHTML =
+      "<p>Could not load leaderboard. Please try again.</p>";
   }
 }
 
 async function buyPremiumMembership() {
-  const button = $('#buy-premium-btn');
+  const button = $("#buy-premium-btn");
 
-  if (typeof window.Cashfree !== 'function') {
-    alert('Cashfree could not load. Please refresh and try again.');
+  if (typeof window.Cashfree !== "function") {
+    alert("Cashfree could not load. Please refresh and try again.");
     return;
   }
 
   button.disabled = true;
-  button.textContent = 'Creating payment...';
+  button.textContent = "Creating payment...";
 
   try {
     // Create a pending order through your backend.
-    const order = await request('http://127.0.0.1:3000/orders/create', {
-      method: 'POST',
-      body: JSON.stringify({})
+    const order = await request("http://127.0.0.1:3000/orders/create", {
+      method: "POST",
+      body: JSON.stringify({}),
     });
 
     if (!order.paymentSessionId) {
-      throw new Error('Payment session was not created.');
+      throw new Error("Payment session was not created.");
     }
 
     // Initialize Cashfree in sandbox mode.
     const cashfree = window.Cashfree({
-      mode: 'sandbox'
+      mode: "sandbox",
     });
 
     // Open the Cashfree checkout page.
     await cashfree.checkout({
       paymentSessionId: order.paymentSessionId,
-      redirectTarget: '_self'
+      redirectTarget: "_self",
     });
   } catch (error) {
-    console.error('Premium membership payment error:', error);
-    alert(error.message || 'Unable to start payment. Please try again.');
+    console.error("Premium membership payment error:", error);
+    alert(error.message || "Unable to start payment. Please try again.");
   } finally {
     button.disabled = false;
-    button.textContent = '⭐ Buy Premium ₹500';
+    button.textContent = "⭐ Buy Premium ₹500";
   }
 }
 
-
 function initializeApp() {
-  $('#daily-date').value = today();
-  $('#transaction-date').value = today();
-  $('#report-month').value = today().slice(0, 7);
+  $("#daily-date").value = today();
+  $("#transaction-date").value = today();
+  $("#report-month").value = today().slice(0, 7);
 
   populateYearOptions();
 
-  document.querySelectorAll('.nav-item').forEach((button) => {
-    button.addEventListener('click', () => setView(button.dataset.view));
+  document.querySelectorAll(".nav-item").forEach((button) => {
+    button.addEventListener("click", () => setView(button.dataset.view));
   });
 
-  $('#add-transaction-btn').addEventListener('click', () => openModal());
-  $('#buy-premium-btn').addEventListener('click', buyPremiumMembership);
-  $('#close-modal').addEventListener('click', closeModal);
-  $('#transaction-form').addEventListener('submit', saveTransaction);
+  $("#add-transaction-btn").addEventListener("click", () => openModal());
+  $("#buy-premium-btn").addEventListener("click", buyPremiumMembership);
+  $("#show-leaderboard-btn").addEventListener("click", async () => {
+    $("#show-leaderboard-btn").classList.add("hidden");
+    // Hide dashboard panels
+    $("#daily-summary").classList.add("hidden");
 
-  $('#transaction-modal').addEventListener('click', (event) => {
-    if (event.target === $('#transaction-modal')) closeModal();
+    ["daily", "monthly", "yearly", "charts"].forEach((name) => {
+      $(`#${name}-panel`).classList.add("hidden");
+    });
+
+    // Show leaderboard
+    $("#leaderboard-panel").classList.remove("hidden");
+
+    // Update page heading
+    $("#page-title").textContent = "🏆 User Leaderboard";
+    $("#page-subtitle").textContent =
+      "See how you rank among other FinTrack users.";
+
+    // Load leaderboard data
+    await loadLeaderboard();
   });
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeModal();
+  $("#back-to-dashboard-btn").addEventListener("click", () => {
+    // Hide leaderboard
+    $("#leaderboard-panel").classList.add("hidden");
+    $("#show-leaderboard-btn").classList.remove("hidden");
+    // Return to daily dashboard
+    setView("daily");
+  });
+  $("#close-modal").addEventListener("click", closeModal);
+  $("#transaction-form").addEventListener("submit", saveTransaction);
+
+  $("#transaction-modal").addEventListener("click", (event) => {
+    if (event.target === $("#transaction-modal")) closeModal();
   });
 
-  $('#daily-date').addEventListener('change', renderDaily);
-  $('#report-month').addEventListener('change', () => renderReport('monthly'));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeModal();
+  });
 
-  $('#report-year').addEventListener('change', () => renderReport('yearly'));
-  $('#chart-year').addEventListener('change', renderChart);
+  $("#daily-date").addEventListener("change", renderDaily);
+  $("#report-month").addEventListener("change", () => renderReport("monthly"));
 
-  $('#monthly-pdf').addEventListener('click', () => exportPDF('monthly'));
-  $('#yearly-pdf').addEventListener('click', () => exportPDF('yearly'));
+  $("#report-year").addEventListener("change", () => renderReport("yearly"));
+  $("#chart-year").addEventListener("change", renderChart);
 
-  $('#transaction-list').addEventListener('click', (event) => {
-    const editButton = event.target.closest('[data-edit]');
-    const deleteButton = event.target.closest('[data-delete]');
+  $("#monthly-pdf").addEventListener("click", () => exportPDF("monthly"));
+  $("#yearly-pdf").addEventListener("click", () => exportPDF("yearly"));
+
+  $("#transaction-list").addEventListener("click", (event) => {
+    const editButton = event.target.closest("[data-edit]");
+    const deleteButton = event.target.closest("[data-delete]");
 
     if (editButton) {
       const transaction = state.transactions.find(
-        (item) => Number(item.id) === Number(editButton.dataset.edit)
+        (item) => Number(item.id) === Number(editButton.dataset.edit),
       );
 
       if (transaction) openModal(transaction);
@@ -660,4 +750,4 @@ function initializeApp() {
   loadLatestOrderStatus();
 }
 
-document.addEventListener('DOMContentLoaded', initializeApp);
+document.addEventListener("DOMContentLoaded", initializeApp);

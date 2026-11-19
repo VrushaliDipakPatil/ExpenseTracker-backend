@@ -52,8 +52,16 @@
           </div>
           <div class="topbar-actions">
             <div class="premium-section">
+              <h3 id="premium-user-message" class="hidden">
+                You are a premium user now!
+              </h3>
+
               <button class="secondary-button" id="buy-premium-btn">
                 ⭐ Buy Premium ₹500
+              </button>
+
+              <button class="secondary-button hidden" id="show-leaderboard-btn">
+                🏆 Show Leaderboard
               </button>
 
               <p id="premium-order-status" class="premium-order-status"></p>
@@ -64,6 +72,26 @@
             </button>
           </div>
         </header>
+
+        <section id="leaderboard-panel" class="panel hidden">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">PREMIUM FEATURE</p>
+            </div>
+          </div>
+
+          <div id="leaderboard-content">
+            <p>Leaderboard will appear here.</p>
+          </div>
+
+          <button
+            type="button"
+            class="secondary-button"
+            id="back-to-dashboard-btn"
+          >
+            Back to Dashboard
+          </button>
+        </section>
 
         <section class="summary-grid" id="daily-summary">
           <article class="summary-card balance-card">
