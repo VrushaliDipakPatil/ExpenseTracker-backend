@@ -1,4 +1,5 @@
 const Expenses = require("../models/expenses");
+const User = require("../models/user");
 
 const addExpense = async (req, res) => {
   try {
@@ -24,13 +25,28 @@ const addExpense = async (req, res) => {
       });
     }
 
-    const expense = await Expenses.create({
-      amount,
-      description: description.trim(),
-      category: category.trim(),
-      type,
-      date,
-      userId: req.userId,
+    const expense = await Expenses.sequelize.transaction(async (t) => {
+      const newExpense = await Expenses.create(
+        {
+          amount,
+          description: description.trim(),
+          category: category.trim(),
+          type,
+          date,
+          userId: req.userId,
+        },
+        { transaction: t },
+      );
+
+      if (type === "debit") {
+        await User.increment("totalExpenses", {
+          by: Number(amount),
+          where: { id: req.userId },
+          transaction: t,
+        });
+      }
+
+      return newExpense;
     });
 
     res.status(201).json({
@@ -180,7 +196,26 @@ const updateExpense = async (req, res) => {
       updates.date = date;
     }
 
-    await expense.update(updates);
+    await Expenses.sequelize.transaction(async (t) => {
+      const oldAmount = expense.type === "debit" ? Number(expense.amount) : 0;
+
+      const newAmount =
+        (updates.type ?? expense.type) === "debit"
+          ? Number(updates.amount ?? expense.amount)
+          : 0;
+
+      const difference = newAmount - oldAmount;
+
+      await expense.update(updates, { transaction: t });
+
+      if (difference !== 0) {
+        await User.increment("totalExpenses", {
+          by: difference,
+          where: { id: req.userId },
+          transaction: t,
+        });
+      }
+    });
 
     res.status(200).json({
       message: "Transaction updated successfully",
@@ -205,7 +240,17 @@ const deleteExpense = async (req, res) => {
       return res.status(404).json({ message: "Transaction not found" });
     }
 
-    await expense.destroy();
+    await Expenses.sequelize.transaction(async (t) => {
+      if (expense.type === "debit") {
+        await User.decrement("totalExpenses", {
+          by: Number(expense.amount),
+          where: { id: req.userId },
+          transaction: t,
+        });
+      }
+
+      await expense.destroy({ transaction: t });
+    });
 
     res.status(200).json({ message: "Transaction deleted successfully" });
   } catch (error) {

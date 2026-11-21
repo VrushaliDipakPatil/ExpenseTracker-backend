@@ -221,53 +221,19 @@ exports.getLeaderboard = async (req, res) => {
       });
     }
 
-    // Fetch all users
+    // Fetch only required fields from Users table
     const users = await User.findAll({
-      attributes: [
-        "id",
-        "name",
-        [fn("COALESCE", fn("SUM", col("Expenses.amount")), 0), "totalExpenses"],
-      ],
-      include: [
-        {
-          model: Expenses,
-          attributes: [],
-          where: { type: "debit" },
-          required: false,
-        },
-      ],
-      group: ["User.id"],
-      order: [[literal("totalExpenses"), "DESC"]],
-    });
-
-    // Calculate total debit expenses for each user
-    const expenseTotals = await Expenses.findAll({
-      attributes: ["userId", [fn("SUM", col("amount")), "totalExpenses"]],
-      where: {
-        type: "debit",
-      },
-      group: ["userId"],
+      attributes: ["name", "totalExpenses"],
+      order: [["totalExpenses", "DESC"]],
       raw: true,
     });
 
-    // Create a map of user expense totals
-    const totalsMap = {};
-
-    expenseTotals.forEach((expense) => {
-      totalsMap[expense.userId] = Number(expense.totalExpenses);
-    });
-
-    // Add totals to users and sort by highest expenses
-    const leaderboard = users
-      .map((user) => ({
-        name: user.name,
-        totalExpenses: totalsMap[user.id] || 0,
-      }))
-      .sort((a, b) => b.totalExpenses - a.totalExpenses)
-      .map((user, index) => ({
-        rank: index + 1,
-        ...user,
-      }));
+    // Assign ranks
+    const leaderboard = users.map((user, index) => ({
+      rank: index + 1,
+      name: user.name,
+      totalExpenses: Number(user.totalExpenses),
+    }));
 
     return res.status(200).json({
       leaderboard,
