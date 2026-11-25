@@ -294,6 +294,7 @@
           />
 
           <label for="description">Description</label>
+
           <input
             id="description"
             name="description"
@@ -302,6 +303,17 @@
             placeholder="e.g. Grocery shopping"
             required
           />
+
+          <button
+            type="button"
+            class="secondary-button"
+            id="suggest-category-btn"
+            style="margin-top: 12px"
+          >
+            ✨ Suggest Category with AI
+          </button>
+
+          <p id="ai-category-status" class="form-message"></p>
 
           <label for="category">Category</label>
           <select id="category" name="category" required>

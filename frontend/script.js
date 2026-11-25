@@ -399,6 +399,7 @@ function openModal(transaction = null) {
 
   $("#amount").value = transaction ? transaction.amount : "";
   $("#description").value = transaction ? transaction.description : "";
+  $("#ai-category-status").textContent = "";
   $("#category").value = transaction ? transaction.category : "";
   $("#transaction-date").value = transaction ? transaction.date : today();
 
@@ -668,6 +669,48 @@ async function buyPremiumMembership() {
   }
 }
 
+async function suggestCategoryWithAI() {
+  const description = $("#description").value.trim();
+  const button = $("#suggest-category-btn");
+  const status = $("#ai-category-status");
+
+  if (!description) {
+    status.textContent = "Please enter a description first.";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "✨ Suggesting...";
+  status.textContent = "";
+
+  try {
+    const data = await request(`${API_URL}/suggest-category`, {
+      method: "POST",
+      body: JSON.stringify({ description }),
+    });
+
+    const category = data.category.trim();
+    const categorySelect = $("#category");
+
+    // Add the category if it is not already available
+    const exists = Array.from(categorySelect.options).some(
+      (option) => option.value.toLowerCase() === category.toLowerCase()
+    );
+
+    if (!exists) {
+      categorySelect.add(new Option(category, category));
+    }
+
+    categorySelect.value = category;
+    status.textContent = `AI suggested: ${category}`;
+  } catch (error) {
+    status.textContent = error.message || "Could not suggest a category.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "✨ Suggest Category with AI";
+  }
+}
+
 function initializeApp() {
   $("#daily-date").value = today();
   $("#transaction-date").value = today();
@@ -680,6 +723,7 @@ function initializeApp() {
   });
 
   $("#add-transaction-btn").addEventListener("click", () => openModal());
+  $("#suggest-category-btn").addEventListener("click", suggestCategoryWithAI);
   $("#buy-premium-btn").addEventListener("click", buyPremiumMembership);
   $("#show-leaderboard-btn").addEventListener("click", async () => {
     $("#show-leaderboard-btn").classList.add("hidden");

@@ -1,3 +1,4 @@
+const { suggestCategory } = require("../services/geminiService");
 const Expenses = require("../models/expenses");
 const User = require("../models/user");
 
@@ -259,10 +260,35 @@ const deleteExpense = async (req, res) => {
   }
 };
 
+const suggestExpenseCategory = async (req, res) => {
+  try {
+    const { description } = req.body;
+
+    if (!description || !description.trim()) {
+      return res.status(400).json({
+        message: "Expense description is required.",
+      });
+    }
+
+    const category = await suggestCategory(description);
+
+    return res.status(200).json({
+      category,
+    });
+  } catch (error) {
+    console.error("Category suggestion error:", error);
+
+    return res.status(500).json({
+      message: "Could not suggest expense category.",
+    });
+  }
+};
+
 module.exports = {
   addExpense,
   fetchExpenses,
   fetchExpenseById,
   updateExpense,
   deleteExpense,
+  suggestExpenseCategory,
 };
