@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({
 
 async function suggestCategory(description) {
   const interaction = await ai.interactions.create({
-    model: "gemini-4-hydrogen",
+    model: "gemini-3.5-flash-lite",
     input: `Suggest the most suitable expense category for this description: "${description}".
 
     You can suggest any relevant category.
