@@ -135,17 +135,6 @@ const fetchExpenseById = async (req, res) => {
 
 const updateExpense = async (req, res) => {
   try {
-    const expense = await Expenses.findOne({
-      where: {
-        id: req.params.id,
-        userId: req.userId,
-      },
-    });
-
-    if (!expense) {
-      return res.status(404).json({ message: "Transaction not found" });
-    }
-
     const { amount, description, category, type, date } = req.body;
     const updates = {};
 
@@ -198,6 +187,20 @@ const updateExpense = async (req, res) => {
     }
 
     await Expenses.sequelize.transaction(async (t) => {
+      const expense = await Expenses.findOne({
+        where: {
+          id: req.params.id,
+          userId: req.userId,
+        },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+
+      if (!expense) {
+        const error = new Error("Transaction not found");
+        error.statusCode = 404;
+        throw error;
+      }
       const oldAmount = expense.type === "debit" ? Number(expense.amount) : 0;
 
       const newAmount =
@@ -224,24 +227,32 @@ const updateExpense = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating transaction:", error);
-    res.status(500).json({ message: "Error updating transaction" });
+
+    res.status(error.statusCode || 500).json({
+      message:
+        error.statusCode === 404 ? error.message : "Error updating transaction",
+    });
   }
 };
 
 const deleteExpense = async (req, res) => {
   try {
-    const expense = await Expenses.findOne({
-      where: {
-        id: req.params.id,
-        userId: req.userId,
-      },
-    });
-
-    if (!expense) {
-      return res.status(404).json({ message: "Transaction not found" });
-    }
-
     await Expenses.sequelize.transaction(async (t) => {
+      const expense = await Expenses.findOne({
+        where: {
+          id: req.params.id,
+          userId: req.userId,
+        },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+
+      if (!expense) {
+        const error = new Error("Transaction not found");
+        error.statusCode = 404;
+        throw error;
+      }
+
       if (expense.type === "debit") {
         await User.decrement("totalExpenses", {
           by: Number(expense.amount),
@@ -253,10 +264,16 @@ const deleteExpense = async (req, res) => {
       await expense.destroy({ transaction: t });
     });
 
-    res.status(200).json({ message: "Transaction deleted successfully" });
+    res.status(200).json({
+      message: "Transaction deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting transaction:", error);
-    res.status(500).json({ message: "Error deleting transaction" });
+
+    res.status(error.statusCode || 500).json({
+      message:
+        error.statusCode === 404 ? error.message : "Error deleting transaction",
+    });
   }
 };
 
