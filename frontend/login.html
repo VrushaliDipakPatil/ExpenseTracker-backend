@@ -1,52 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | FinTrack</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <main class="auth-container">
-    <section class="auth-card">
-      <h1>Welcome Back!</h1>
-      <p class="auth-subtitle">Log in to manage your expenses.</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | FinTrack</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="auth-container">
+      <section class="auth-card">
+        <h1>Welcome Back!</h1>
+        <p class="auth-subtitle">Log in to manage your expenses.</p>
 
-      <form id="login-form">
-        <div class="form-group">
-          <label for="login-email">Email Address</label>
-          <input
-            type="email"
-            id="login-email"
-            placeholder="Enter your email"
-            required
-          >
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input
+              type="email"
+              id="login-email"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input
+              type="password"
+              id="login-password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <p id="login-message" role="status"></p>
+
+          <button type="submit" class="primary-button auth-submit">
+            Log In
+          </button>
+        </form>
+
+        <p class="auth-footer">
+          <a href="#" id="forgot-password-link">Forgot Password?</a>
+        </p>
+
+        <div id="forgot-password-section" class="hidden">
+          <h2>Forgot Password?</h2>
+          <p class="auth-subtitle">
+            Enter your registered email address. We'll send you a test email.
+          </p>
+
+          <form id="forgot-password-form">
+            <div class="form-group">
+              <label for="forgot-email">Email Address</label>
+              <input
+                type="email"
+                id="forgot-email"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <p id="forgot-password-message" role="status"></p>
+
+            <button type="submit" class="primary-button auth-submit">
+              Submit
+            </button>
+          </form>
+
+          <p class="auth-footer">
+            <a href="#" id="back-to-login">Back to Login</a>
+          </p>
         </div>
 
-        <div class="form-group">
-          <label for="login-password">Password</label>
-          <input
-            type="password"
-            id="login-password"
-            placeholder="Enter your password"
-            required
-          >
-        </div>
+        <p class="auth-footer">
+          Don't have an account?
+          <a href="signup.html">Sign up</a>
+        </p>
+      </section>
+    </main>
 
-        <p id="login-message" role="status"></p>
-
-        <button type="submit" class="primary-button auth-submit">
-          Log In
-        </button>
-      </form>
-
-      <p class="auth-footer">
-        Don't have an account?
-        <a href="signup.html">Sign up</a>
-      </p>
-    </section>
-  </main>
-
-  <script src="login.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="login.js"></script>
+  </body>
 </html>

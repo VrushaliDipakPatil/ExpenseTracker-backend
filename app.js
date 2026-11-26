@@ -9,6 +9,7 @@ const Expenses = require("./models/expenses");
 const expenseRoutes = require("./routes/expenseRoute");
 const userRoutes = require("./routes/userRoute");
 const orderRoutes = require("./routes/orderRoute");
+const passwordRoutes = require("./routes/passwordRoute");
 const cors = require("cors");
 const app = express();
 const port = 3000;
@@ -45,6 +46,7 @@ app.use("/expenses", expenseRoutes);
 app.use("/users", userRoutes);
 app.use("/orders", orderRoutes);
 require("./models");
+app.use("/password", passwordRoutes);
 
 db.sync({ force: false })
   .then(() => {
